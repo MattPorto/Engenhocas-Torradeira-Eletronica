@@ -1,0 +1,97 @@
+    #include <Stepper.h> //Biblioteca que trabalha com o motor de passo
+
+    const int stepsPerRevolution = 500;  //Constante que configura quantos passos o motor dá para  completar uma volta em torno do seu eixo
+
+    Stepper myStepper(stepsPerRevolution, 8,9,10,11);  //Pinos que enviam os comandos para o motor
+
+    const int pwPin = 7;  //Pino que recebe os pulsos do sensor
+
+    long pulse, inches, cm;  //Variáveis que serão usadas para receber os valores do sensor e convertê-las
+
+    void setup() {
+
+    pinMode(pwPin, INPUT);  //Configura o pino do sensor como entrada
+
+    myStepper.setSpeed(60); //Configura a velocidade do motor
+
+    }
+
+    //Função criada para fazer a plataforma do porta-torradas descer o suficiente para permitir a retirada das torradas
+
+    void expande(){
+
+    int x=0;
+
+    for(x=0; x<10; x++)  //O valor 10 foi a quantidade de voltas configuradas para a plataforma descer até um determinado ponto (cerca de 13cm)
+
+    {
+
+    myStepper.step(stepsPerRevolution); //Comando que faz o motor girar
+
+    }
+
+    //Estrutura que verifica se o usuário ainda está próximo do porta-torradas
+
+    while(x=0){
+
+    if(cm<15){      // Se estiver
+
+    delay(500);}     //O motor espera meio segundo e verifica novamente
+
+    else{               //Caso contrário
+
+    recolhe();   //A função que recolhe a plataforma será chamada
+
+    x= 1;}} }     //O valor da variável x é alterado para o código sair da estrutura de repetição, parando assim de verificar se o usuário está próximo
+
+    //Função criada para recolher a plataforma, fechando o porta-torradas
+
+    void recolhe(){
+
+    int x=0;
+
+    for(x=0; x<10; x++){         //O valor 10 foi escolhido para a plataforma subir a mesma distância que ela desceu anteriormente
+
+    myStepper.step(-stepsPerRevolution);      //Comando que faz o motor girar no sentido oposto ao da função anterior, fazendo assim a plataforma subir
+
+    }
+
+    }
+
+    void loop() {
+
+    pulse = pulseIn(pwPin, HIGH);        //Armazena o valor recebido pelo sensor
+
+    inches = pulse/147;         //Converte esse mesmo valor para polegadas
+
+    cm = inches * 2.54;          //Depois converte de polegadas para centímetros
+
+    if(cm<15){           //Verifica se o usuário está próximo
+
+    int acum=0;
+
+    for(int i=0;i<5;i++){        //Verifica 5 vezes para fazer uma media da distância do usuário para ter certeza de que ele está próximo ao porta-torradas propositalmente
+
+    acum= acum+cm;
+
+    delay(100);
+
+    }
+
+    int media = acum/5;       //Calcula a média
+
+    if (media<15){                  //Se a média for menor que 20cm
+
+    expande();      //Chama a função expande()
+
+    }
+
+    delay(10000);  //Aguarda 20 segundos
+
+    recolhe();         //Chama a função recolhe()
+
+    delay(5000);    //Aguarda 5 segundos antes do porta-torradas poder ser utilizado novamente
+
+    }
+
+    }
